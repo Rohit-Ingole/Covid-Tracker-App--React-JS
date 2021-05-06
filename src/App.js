@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import styled from "styled-components";
+import { useEffect, useState } from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import { Cards, Chart, CountryPicker } from "./components";
+import { fetchData } from "./api/axios";
+
+import { MoonLoader } from "react-spinners";
+import { css } from "@emotion/core";
+
+const App = () => {
+  const [data, setdata] = useState({});
+  const [Country, setCountry] = useState("Global");
+
+  const handleCountryChange = async (countryname) => {
+    const fullData = async () => {
+      setdata(await fetchData(countryname));
+      setCountry(countryname);
+    };
+    fullData();
+  };
+
+  useEffect(() => {
+    const fullData = async () => {
+      setdata(await fetchData());
+    };
+    fullData();
+  }, []);
+
+  const override = css`
+    top: 40vh;
+  `;
+
+  if (!data.confirmed) {
+    return (
+      <Container>
+        <MoonLoader size={100} css={override} color={"#36D7B7"} />
+      </Container>
+    );
+  } else {
+    return (
+      <Container>
+        <Cards data={data} />
+        <CountryPicker handleCountryChange={handleCountryChange} />
+        <Chart country={Country} data={data} />
+      </Container>
+    );
+  }
+};
 
 export default App;
+
+const Container = styled.div`
+  display: grid;
+  place-items: center;
+`;
